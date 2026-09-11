@@ -16,6 +16,7 @@ from telethon.errors import RPCError
 API_ID = int(os.environ["API_ID"])
 API_HASH = os.environ["API_HASH"]
 TELEGRAM_SESSION = os.environ["TELEGRAM_SESSION"]
+TARGET_CHAT_ID = int(os.environ["TARGET_CHAT_ID"])
 
 # Render خودش PORT را تنظیم می‌کند
 PORT = int(os.environ.get("PORT", 10000))
@@ -25,7 +26,6 @@ PORT = int(os.environ.get("PORT", 10000))
 # Telegram Settings
 # =========================
 
-TARGET_CHAT_ID = -1001715381518
 SPECIAL_BOT_ID = 8299996037
 
 EXACT_MESSAGES = {
