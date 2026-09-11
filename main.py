@@ -18,7 +18,7 @@ API_HASH = os.environ["API_HASH"]
 TELEGRAM_SESSION = os.environ["TELEGRAM_SESSION"]
 TARGET_CHAT_ID = int(os.environ["TARGET_CHAT_ID"])
 
-# Render خودش PORT را تنظیم می‌کند
+# Port provided by hosting platform
 PORT = int(os.environ.get("PORT", 10000))
 
 
@@ -66,53 +66,73 @@ client = TelegramClient(
 
 
 # =========================
-# Render Web Server
+# Health / HTTP Server
 # =========================
 
 class HealthHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
+
         if self.path == "/":
             self.send_response(200)
-            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header(
+                "Content-Type",
+                "text/plain; charset=utf-8"
+            )
             self.end_headers()
+
             self.wfile.write(
                 b"Telegram bot is running."
             )
 
         elif self.path == "/health":
             self.send_response(200)
-            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header(
+                "Content-Type",
+                "text/plain; charset=utf-8"
+            )
             self.end_headers()
+
             self.wfile.write(
                 b"OK"
             )
 
         else:
             self.send_response(404)
-            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header(
+                "Content-Type",
+                "text/plain; charset=utf-8"
+            )
             self.end_headers()
+
             self.wfile.write(
                 b"Not Found"
             )
 
     def log_message(self, format, *args):
-        # جلوگیری از شلوغ شدن لاگ Render
+        # Disable HTTP access logs
         return
 
 
 def start_web_server():
-    server = ThreadingHTTPServer(
-        ("0.0.0.0", PORT),
-        HealthHandler
-    )
 
-    logging.info(
-        "Web server started on 0.0.0.0:%s",
-        PORT
-    )
+    try:
+        server = ThreadingHTTPServer(
+            ("0.0.0.0", PORT),
+            HealthHandler
+        )
 
-    server.serve_forever()
+        logging.info(
+            "HTTP server started on 0.0.0.0:%s",
+            PORT
+        )
+
+        server.serve_forever()
+
+    except Exception:
+        logging.exception(
+            "HTTP server crashed."
+        )
 
 
 # =========================
@@ -124,7 +144,9 @@ async def delete_later(
     message_id: int,
     delay_seconds: int
 ):
+
     try:
+
         await asyncio.sleep(delay_seconds)
 
         await client.delete_messages(
@@ -143,6 +165,7 @@ async def delete_later(
         raise
 
     except RPCError as exc:
+
         logging.warning(
             "Could not delete message %s: %s",
             message_id,
@@ -150,6 +173,7 @@ async def delete_later(
         )
 
     except Exception:
+
         logging.exception(
             "Unexpected error deleting message %s",
             message_id
@@ -221,30 +245,44 @@ async def message_handler(event):
 
 async def main():
 
-    # Login to Telegram
-    await client.start()
+    try:
 
-    me = await client.get_me()
+        logging.info("Connecting to Telegram...")
 
-    logging.info(
-        "Logged in as %s (id=%s)",
-        getattr(me, "username", None)
-        or getattr(me, "first_name", None),
-        me.id,
-    )
+        await client.start()
 
-    logging.info(
-        "Watching group %s",
-        TARGET_CHAT_ID
-    )
+        me = await client.get_me()
 
-    logging.info(
-        "Render PORT = %s",
-        PORT
-    )
+        logging.info(
+            "Logged in as %s (id=%s)",
+            getattr(me, "username", None)
+            or getattr(me, "first_name", None),
+            me.id,
+        )
 
-    # Telegram client remains connected
-    await client.run_until_disconnected()
+        logging.info(
+            "Watching group %s",
+            TARGET_CHAT_ID
+        )
+
+        logging.info(
+            "HTTP port = %s",
+            PORT
+        )
+
+        logging.info(
+            "Telegram client is running."
+        )
+
+        await client.run_until_disconnected()
+
+    except Exception:
+
+        logging.exception(
+            "Telegram client crashed."
+        )
+
+        raise
 
 
 # =========================
@@ -252,6 +290,10 @@ async def main():
 # =========================
 
 if __name__ == "__main__":
+
+    logging.info(
+        "Starting Telegram application..."
+    )
 
     # Start HTTP server in background thread
     web_thread = threading.Thread(
@@ -262,12 +304,19 @@ if __name__ == "__main__":
     web_thread.start()
 
     try:
+
         asyncio.run(main())
 
     except KeyboardInterrupt:
-        logging.info("Stopped.")
+
+        logging.info(
+            "Stopped manually."
+        )
 
     except Exception:
+
         logging.exception(
-            "Application crashed."
+            "Application terminated بسبب خطا."
         )
+
+        raise
