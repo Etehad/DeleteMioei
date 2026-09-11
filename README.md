@@ -1,6 +1,6 @@
 # Delete Mio Messages
 
-A Telethon user-account service that watches Telegram group `-1001715381518` and schedules message deletion.
+A Telethon user-account service that watches Telegram group `TARGET_CHAT_ID` and schedules message deletion.
 
 ## Rules
 
@@ -27,6 +27,7 @@ Set these on Render:
 - `API_ID`
 - `API_HASH`
 - `TELEGRAM_SESSION`
+- `TARGET_CHAT_ID`
 
 Do **not** put the Telegram String Session in GitHub.
 
