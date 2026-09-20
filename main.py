@@ -31,6 +31,10 @@ SPECIAL_BOT_ID = 8299996037
 EXACT_MESSAGES = {
     "مع",
     "میو",
+    "میک",
+    "پیشی",
+    "گربه",
+    "رولت میویی",
     "ماهی",
     "یخچال میویی",
     "میو بانک",
@@ -203,7 +207,7 @@ async def message_handler(event):
             for phrase in CONTAINS_MESSAGES
         )
     ):
-        delay = 60
+        delay = 600
         reason = "content rule"
 
     else:
